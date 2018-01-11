@@ -16,8 +16,8 @@ function requestInfo(URL){
 		})
 	})
 }
-
-app.use(route.get('/',(ctx,next)=>{
+app.use(timeout)
+app.use(route.get('/',async (ctx,next)=>{
 	console.time('requestTime')
 	agent.get('http://www.casad.cas.cn/chnl/371/index.html')
 	.end((err,data)=>{
@@ -32,11 +32,12 @@ app.use(route.get('/',(ctx,next)=>{
 				return
 			}else{
 				let url=$(item).attr('href')
-				allUrl.push(requestInfo(url))
+				allUrl.push(await requestInfo(url))		
+				next()	
 			}	
 		})
 		allUrl=allUrl.slice(0,10)	
-		Promise.all(allUrl)
+		await Promise.all(allUrl)
 		.then((pages)=>{
 			let infoData=[]
 			pages.forEach((html)=>{
@@ -57,25 +58,6 @@ app.use(route.get('/',(ctx,next)=>{
 		})
 	})
 }))
-// const main = async function(ctx) {
-//   const tmpdir = os.tmpdir();
-//   const filePaths = [];
-//   const files = ctx.request.body.files || {};
-
-//   for (let key in files) {
-//     const file = files[key];
-//     const filePath = path.join(tmpdir, file.name);
-//     const reader = fs.createReadStream(file.path);
-//     const writer = fs.createWriteStream(filePath);
-//     reader.pipe(writer);
-//     filePaths.push(filePath);
-//   }
-
-//   ctx.body = filePaths;
-// };
-
-// app.use(koaBody({ multipart: true }));
-// app.use(main);
 app.listen(port,()=>{
 	console.log('koa-app listen on port:'+port)
 })
